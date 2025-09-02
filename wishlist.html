@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wishlist Даня и Мира</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <style>
+    .fancy-link { position: relative; text-decoration: none; }
+    .fancy-link::after {
+      content: ""; position: absolute; left: 0; bottom: -2px;
+      width: 0%; height: 2px; background-color: currentColor; transition: width .3s ease;
+    }
+    .fancy-link:hover::after { width: 100%; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 p-6">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-4xl font-bold text-gray-800 mb-10 drop-shadow text-center">🎁 Wishlist Дани и Миры</h1>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Даня -->
+      <section class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center">
+        <img src="Danya.png" alt="Даня" class="w-28 h-28 rounded-full border-4 border-red-500 shadow-md mb-4" onerror="this.style.display='none'">
+        <h2 class="text-2xl font-semibold text-red-700">Даня</h2>
+        <ul id="danya-list" class="mt-4 text-gray-700 space-y-2 text-lg list-disc list-inside"></ul>
+      </section>
+
+      <!-- Мира -->
+      <section class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center">
+        <img src="Mira.png" alt="Мира" class="w-28 h-28 rounded-full border-4 border-blue-500 shadow-md mb-4" onerror="this.style.display='none'">
+        <h2 class="text-2xl font-semibold text-blue-600">Мира</h2>
+        <ul id="mira-list" class="mt-4 text-gray-700 space-y-2 text-lg list-disc list-inside"></ul>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const byId = (id) => document.getElementById(id);
+
+    function addItem(who, text, link) {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.textContent = text || "Без названия";
+      a.href = link || "#";
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.className = "fancy-link " + (who === "Даня" ? "text-red-600 hover:text-red-800" : "text-blue-600 hover:text-blue-800");
+      li.appendChild(a);
+      if (who === "Даня") byId("danya-list").appendChild(li);
+      if (who === "Мира") byId("mira-list").appendChild(li);
+    }
+
+    // Загружаем Excel при старте
+    fetch("wishlist.xlsx")
+      .then(res => res.arrayBuffer())
+      .then(data => {
+        let workbook = XLSX.read(data, { type: "array" });
+        let sheet = workbook.Sheets[workbook.SheetNames[0]];
+        let rows = XLSX.utils.sheet_to_json(sheet);
+
+        // формат строк: { name: "Даня", item: "🎧 Новые наушники", link: "https://..." }
+        rows.forEach(r => {
+          if (r.name && r.item) {
+            addItem(r.name.trim(), r.item.trim(), r.link);
+          }
+        });
+      })
+      .catch(err => {
+        console.error("Ошибка загрузки Excel:", err);
+      });
+  </script>
+</body>
+</html>
